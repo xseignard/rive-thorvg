@@ -39,4 +39,5 @@ jobs:
 
       - name: Build ESP32 direct example
         working-directory: examples/esp32_direct
-        run: idf.py build
+        shell: bash
+        run: source /opt/esp/idf/export.sh && idf.py build
