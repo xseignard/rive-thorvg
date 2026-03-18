@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  desktop-build-and-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install desktop dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build pkg-config libsdl2-dev
+
+      - name: Configure CMake
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DRIVE_THORVG_BUILD_SDL=ON -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build -j2
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
+
+  esp32-compile-only:
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:v5.2.2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build ESP32 direct example
+        working-directory: examples/esp32_direct
+        run: idf.py build
